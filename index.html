@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSC GK Pro Quiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Color Scheme */
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #475569;
+            --accent: #f97316;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --success: #22c55e;
+            --warning: #eab308;
+            --error: #ef4444;
+            
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 1rem;
+            --radius-full: 9999px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--surface);
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-md);
+        }
+
+        /* Header Styles */
+        .quiz-header {
+            background: var(--surface);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .quiz-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .timer-container {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-full);
+        }
+
+        .timer-icon {
+            color: var(--accent);
+        }
+
+        .timer {
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: var(--surface);
+            border-radius: var(--radius-full);
+            height: 8px;
+            margin: var(--spacing-lg) 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Question Card */
+        .question-card {
+            background: var(--surface);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .question-number {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-full);
+        }
+
+        .marks {
+            font-size: 0.875rem;
+            color: var(--accent);
+        }
+
+        .question-text {
+            font-size: 1.125rem;
+            margin-bottom: var(--spacing-xl);
+            line-height: 1.7;
+        }
+
+        /* Options Grid */
+        .options-grid {
+            display: grid;
+            gap: var(--spacing-md);
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(var(--spacing-xs));
+        }
+
+        .option.selected {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: var(--primary);
+        }
+
+        .option-marker {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        /* Navigation */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: var(--spacing-md);
+            margin-top: var(--spacing-xl);
+        }
+
+        .nav-btn {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--text-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: var(--text-primary);
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        /* Question Navigator */
+        .question-navigator {
+            display: none;
+            gap: var(--spacing-xs);
+            flex-wrap: wrap;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .navigator-item {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .navigator-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .navigator-item.answered {
+            background: var(--success);
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            padding: var(--spacing-md);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            max-width: 600px;
+            margin: var(--spacing-xl) auto;
+            position: relative;
+        }
+
+        .result-grid {
+            display: grid;
+            gap: var(--spacing-lg);
+            margin: var(--spacing-xl) 0;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: var(--spacing-md) 0;
+            color: var(--primary);
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .quiz-title {
+                font-size: 1.5rem;
+            }
+
+            .options-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .question-navigator {
+                display: flex;
+            }
+
+            .result-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .app-container {
+                padding: var(--spacing-xl);
+            }
+
+            .question-text {
+                font-size: 1.25rem;
+            }
+
+            .result-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Quiz Header -->
+        <header class="quiz-header">
+            <h1 class="quiz-title">SSC GK Mock Test</h1>
+            <div class="timer-container">
+                <i class="fas fa-clock timer-icon"></i>
+                <span class="timer" id="time">60</span>
+                <span>sec</span>
+            </div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- Question Navigator -->
+        <div class="question-navigator" id="questionNavigator"></div>
+
+        <!-- Question Card -->
+        <div class="question-card slide-in">
+            <div class="question-header">
+                <span class="question-number" id="questionNumber">Question 1/10</span>
+                <span class="marks">1 Mark</span>
+            </div>
+            <div class="question-text" id="question"></div>
+            <div class="options-grid" id="options"></div>
+            <div class="navigation">
+                <button class="nav-btn btn-secondary" id="prevBtn" onclick="prevQuestion()">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <button class="nav-btn btn-danger" id="submitBtn" onclick="submitQuiz()" style="display: none;">
+                    <i class="fas fa-check-circle"></i> Submit
+                </button>
+                <button class="nav-btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Modal -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content slide-in">
+            <h2 style="text-align: center; font-size: 1.5rem; margin-bottom: 0.5rem;">Quiz Results</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: var(--spacing-xl);">
+                Here's how you performed
+            </p>
+
+            <div class="result-grid">
+                <!-- Results will be populated by JavaScript -->
+            </div>
+
+            <div style="text-align: center;">
+                <button class="nav-btn btn-primary" onclick="restartQuiz()">
+                    <i class="fas fa-redo"></i> Retake Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script>
+        const questions = [
+            {
+                question: "Which of the following cities is known as the 'Silicon Valley of India'?",
+                options: ["Mumbai", "Bangalore", "Hyderabad", "Chennai"],
+                correct: 1,
+                explanation: "Bangalore is known as the Silicon Valley of India due to its role as the nation's leading IT exporter."
+            },
+            {
+                question: "What is the name of India's first super computer?",
+                options: ["PARAM 8000", "PARAM Yuva", "PARAM Siddhi", "PARAM Veer"],
+                correct: 0,
+                explanation: "PARAM 8000 was India's first supercomputer, developed by C-DAC in 1991."
+            },
+            {
+                question: "Which Indian state has the longest coastline?",
+                options: ["Kerala", "Tamil Nadu", "Gujarat", "Maharashtra"],
+                correct: 2,
+                explanation: "Gujarat has the longest coastline of about 1,600 km among all Indian states."
+            },
+            {
+                question: "Who was the first Indian to receive the Nobel Prize?",
+                options: ["C.V. Raman", "Rabindranath Tagore", "Mother Teresa", "Amartya Sen"],
+                correct: 1,
+                explanation: "Rabindranath Tagore was the first Indian to receive the Nobel Prize (Literature) in 1913."
+            },
+            {
+                question: "Which is the largest cave temple in India?",
+                options: ["Elephanta Caves", "Ellora Caves", "Ajanta Caves", "Badami Caves"],
+                correct: 1,
+                explanation: "Ellora Caves is the largest cave temple in India, featuring Hindu, Buddhist, and Jain monuments."
+            }
+        ];
+    
+        let currentQuestion = 0;
+        let timer;
+        let timeLeft = 60;
+        let answers = new Array(questions.length).fill(-1);
+        let startTime = new Date();
+        let isQuizSubmitted = false;
+    
+        // Loading Screen Handler
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                initializeQuiz();
+            }, 1500);
+        });
+    
+        function initializeQuiz() {
+            displayQuestion();
+            updateQuestionNavigator();
+            updateProgressBar();
+            initializeTimer();
+        }
+    
+        function updateQuestionNavigator() {
+            const navigator = document.getElementById('questionNavigator');
+            navigator.innerHTML = '';
+            
+            questions.forEach((_, index) => {
+                const item = document.createElement('div');
+                item.className = `navigator-item ${index === currentQuestion ? 'active' : ''} ${answers[index] !== -1 ? 'answered' : ''}`;
+                item.textContent = index + 1;
+                item.onclick = () => goToQuestion(index);
+                navigator.appendChild(item);
+            });
+        }
+    
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${progress}%`;
+        }
+    
+        function initializeTimer() {
+            clearInterval(timer);
+            timeLeft = 60;
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    handleTimeUp();
+                }
+            }, 1000);
+        }
+    
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('time');
+            timerElement.textContent = timeLeft;
+            timerElement.className = `timer ${timeLeft <= 10 ? 'warning' : ''}`;
+        }
+    
+        function handleTimeUp() {
+            if (currentQuestion < questions.length - 1) {
+                nextQuestion();
+            } else {
+                submitQuiz();
+            }
+        }
+    
+        function displayQuestion() {
+            const question = questions[currentQuestion];
+            
+            // Animate question transition
+            const questionCard = document.querySelector('.question-card');
+            questionCard.style.opacity = '0';
+            
+            setTimeout(() => {
+                document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1}/${questions.length}`;
+                document.getElementById('question').textContent = question.question;
+                
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                
+                question.options.forEach((option, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = `option ${answers[currentQuestion] === index ? 'selected' : ''}`;
+                    optionDiv.onclick = () => selectOption(index);
+                    
+                    optionDiv.innerHTML = `
+                        <div class="option-marker">${String.fromCharCode(65 + index)}</div>
+                        <div class="option-text">${option}</div>
+                    `;
+                    
+                    optionsContainer.appendChild(optionDiv);
+                });
+                
+                // Update navigation buttons
+                document.getElementById('prevBtn').style.display = currentQuestion === 0 ? 'none' : 'flex';
+                document.getElementById('nextBtn').style.display = currentQuestion === questions.length - 1 ? 'none' : 'flex';
+                document.getElementById('submitBtn').style.display = currentQuestion === questions.length - 1 ? 'flex' : 'none';
+                
+                questionCard.style.opacity = '1';
+                updateQuestionNavigator();
+                updateProgressBar();
+            }, 300);
+        }
+    
+        function selectOption(index) {
+            if (isQuizSubmitted) return;
+            
+            answers[currentQuestion] = index;
+            
+            document.querySelectorAll('.option').forEach((option, i) => {
+                option.className = `option ${i === index ? 'selected' : ''}`;
+            });
+            
+            updateQuestionNavigator();
+        }
+    
+        function goToQuestion(index) {
+            if (isQuizSubmitted) return;
+            
+            currentQuestion = index;
+            displayQuestion();
+            initializeTimer();
+        }
+    
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                displayQuestion();
+                initializeTimer();
+            }
+        }
+    
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                displayQuestion();
+                initializeTimer();
+            }
+        }
+    
+        function calculateResults() {
+            const endTime = new Date();
+            const timeTaken = Math.floor((endTime - startTime) / 1000);
+            let correctCount = 0;
+            
+            answers.forEach((answer, index) => {
+                if (answer === questions[index].correct) correctCount++;
+            });
+            
+            const accuracy = Math.round((correctCount / questions.length) * 100);
+            const unanswered = answers.filter(a => a === -1).length;
+            
+            return {
+                totalQuestions: questions.length,
+                correctAnswers: correctCount,
+                wrongAnswers: questions.length - correctCount - unanswered,
+                unanswered: unanswered,
+                accuracy: accuracy,
+                timeTaken: formatTime(timeTaken),
+                performance: getPerformanceRating(accuracy)
+            };
+        }
+    
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+    
+        function getPerformanceRating(accuracy) {
+            if (accuracy >= 90) return "Outstanding";
+            if (accuracy >= 80) return "Excellent";
+            if (accuracy >= 70) return "Very Good";
+            if (accuracy >= 60) return "Good";
+            if (accuracy >= 50) return "Average";
+            return "Needs Improvement";
+        }
+    
+        function submitQuiz() {
+            clearInterval(timer);
+            isQuizSubmitted = true;
+            
+            const results = calculateResults();
+            const resultGrid = document.querySelector('.result-grid');
+            
+            resultGrid.innerHTML = `
+                <div class="result-item">
+                    <i class="fas fa-check" style="color: var(--success);"></i>
+                    <div class="result-value">${results.correctAnswers}</div>
+                    <div>Correct Answers</div>
+                </div>
+                <div class="result-item">
+                    <i class="fas fa-times" style="color: var(--error);"></i>
+                    <div class="result-value">${results.wrongAnswers}</div>
+                    <div>Wrong Answers</div>
+                </div>
+                <div class="result-item">
+                    <i class="fas fa-question" style="color: var(--warning);"></i>
+                    <div class="result-value">${results.unanswered}</div>
+                    <div>Unanswered</div>
+                </div>
+                <div class="result-item">
+                    <i class="fas fa-percentage" style="color: var(--primary);"></i>
+                    <div class="result-value">${results.accuracy}%</div>
+                    <div>Accuracy</div>
+                </div>
+                <div class="result-item">
+                    <i class="fas fa-clock" style="color: var(--accent);"></i>
+                    <div class="result-value">${results.timeTaken}</div>
+                    <div>Time Taken</div>
+                </div>
+                <div class="result-item">
+                    <i class="fas fa-star" style="color: var(--primary);"></i>
+                    <div class="result-value">${results.performance}</div>
+                    <div>Performance</div>
+                </div>
+            `;
+            
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+    
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = new Array(questions.length).fill(-1);
+            startTime = new Date();
+            isQuizSubmitted = false;
+            
+            document.getElementById('resultModal').style.display = 'none';
+            initializeQuiz();
+        }
+    
+        // Handle keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (isQuizSubmitted) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    prevQuestion();
+                    break;
+                case 'ArrowRight':
+                    nextQuestion();
+                    break;
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                    selectOption(parseInt(e.key) - 1);
+                    break;
+            }
+        });
+    
+        // Initialize the quiz when the page loads
+        initializeQuiz();
+    </script>
+    </html>
